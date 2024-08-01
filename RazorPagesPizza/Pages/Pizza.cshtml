@@ -1,0 +1,67 @@
+﻿@page
+@using RazorPagesPizza.Models
+@model RazorPagesPizza.Pages.PizzaModel
+@{
+    ViewData["Title"] = "Pizza List";
+}
+
+<h1>Pizza List 🍕</h1>
+<form method="post" class="card p-3" id="formpizza">
+    <div class="row">
+        <div asp-validation-summary="All"></div>
+    </div>
+    <div class="form-group mb-0 align-middle">
+        <label asp-for="NewPizza.Name">Name</label>
+        <input type="text" asp-for="NewPizza.Name" class="mr-5">
+        <label asp-for="NewPizza.Size">Size</label>
+        <select asp-for="NewPizza.Size" asp-items="Html.GetEnumSelectList<PizzaSize>()" class="mr-5"></select>
+
+        <label asp-for="NewPizza.StuffedCrust">Stuffed crust</label>
+        <select asp-for="NewPizza.StuffedCrust" asp-items="Html.GetEnumSelectList<Stuffed>()" class="mr-5"></select>
+
+        <label asp-for="NewPizza.Price"></label>
+        <input asp-for="NewPizza.Price" class="mr-5" />
+        <label asp-for="NewPizza.IsGlutenFree">Gluten Free</label>
+        <input type="checkbox" asp-for="NewPizza.IsGlutenFree" class="mr-5">
+        <button class="btn btn-primary">Add</button>
+    </div>
+</form>
+
+<div id="contenedorPartialTable">
+    @await Html.PartialAsync("_PartialViewTabla", Model.pizzas)
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+
+const formu = document.getElementById("formpizza");
+
+formu.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(formu);
+    try {
+        const response = await fetch('/Pizza?handler=UpdatePartial', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+
+        if (response.ok) {
+            const html = await response.text();
+            document.getElementById("contenedorPartialTable").innerHTML = html;
+        } else {
+            const errorText = await response.text();
+            throw new Error(errorText);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+})});
+    </script>
+}
+
